@@ -36,13 +36,42 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Read "[modello: ...]" and "[impegno: ...]" from the triggering text.
+      # Only known values are accepted; anything else falls back to the default.
+      - name: Read model and effort
+        id: opts
+        env:
+          TEXT: ${{ github.event.comment.body || github.event.review.body || github.event.issue.body }}
+        run: |
+          model=opus
+          effort=medium
+          lower="$(printf '%s' "$TEXT" | tr '[:upper:]' '[:lower:]')"
+          if [[ "$lower" =~ \[modello:[[:space:]]*([a-z]+)[[:space:]]*\] ]]; then
+            case "${BASH_REMATCH[1]}" in
+              opus|sonnet|haiku) model="${BASH_REMATCH[1]}" ;;
+            esac
+          fi
+          if [[ "$lower" =~ \[impegno:[[:space:]]*([a-z ]+)\] ]]; then
+            v="$(printf '%s' "${BASH_REMATCH[1]}" | xargs)"
+            case "$v" in
+              basso) effort=low ;;
+              medio) effort=medium ;;
+              alto) effort=high ;;
+              "molto alto") effort=xhigh ;;
+              massimo) effort=max ;;
+            esac
+          fi
+          echo "model=$model" >> "$GITHUB_OUTPUT"
+          echo "effort=$effort" >> "$GITHUB_OUTPUT"
+          echo "Model: $model, effort: $effort"
+
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Test 3 needs comments written by automations to be accepted too.
-          allowed_bots: '*'
           # Temporary: show Claude's output in the log to diagnose failures.
           show_full_output: true
           claude_args: >-
-            --model opus
+            --model ${{ steps.opts.outputs.model }}
+            --effort ${{ steps.opts.outputs.effort }}
+            --append-system-prompt "Sei stato avviato con il modello ${{ steps.opts.outputs.model }} e l'impegno ${{ steps.opts.outputs.effort }}: scrivili cosi nelle pull request e nelle revisioni."
             --allowedTools "Edit,Write,Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*)"
