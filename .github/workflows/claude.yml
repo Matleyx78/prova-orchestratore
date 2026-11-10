@@ -41,6 +41,8 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Test 3 needs comments written by automations to be accepted too.
           allowed_bots: '*'
+          # Temporary: show Claude's output in the log to diagnose failures.
+          show_full_output: true
           claude_args: >-
             --model opus
-            --allowedTools "Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*)"
+            --allowedTools "Edit,Write,Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*)"
