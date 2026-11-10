@@ -40,12 +40,44 @@ gh api -X DELETE "repos/Matleyx78/prova-orchestratore/issues/<numero>/labels/AA-
 3. Con tutto verde togli l'etichetta, scrivi un riepilogo nella pull request e
    **termina**.
 
+## Passaggio a Claude (solo per Codex)
+
+Se sei Codex, quando hai finito una pull request di lavoro, come **ultima cosa
+prima di terminare** scrivi nella pull request **un solo** commento, a
+seconda di com'è andata:
+
+- CI verde:
+
+  ```text
+  @claude [modello: opus] [impegno: alto] Leggi AGENTS.md e seguilo alla lettera. Rivedi questa pull request come dice AGENTS.md in "Revisione".
+  ```
+
+- CI ancora rossa dopo tre tentativi:
+
+  ```text
+  @claude [modello: opus] [impegno: alto] Leggi AGENTS.md e seguilo alla lettera. La CI di questa pull request non passa dopo tre tentativi: analizzala come dice AGENTS.md in "Analisi di una CI rossa".
+  ```
+
+Non scrivere `@claude` in nessun altro commento: ogni menzione avvia una
+sessione di Claude.
+
+Nella pull request e nei commenti scrivi il modello e l'impegno che il
+responsabile ti ha indicato nel messaggio di avvio (per esempio «GPT-6.1 Sol,
+impegno medio»); se non te li ha indicati, «modello e impegno non noti».
+
 ## Revisione
 
 Se ti chiedono di rivedere una pull request che non è tua: prendila in carico,
 lascia **un solo commento** che comincia con «Revisione di <nome
 dell'agente>», con le segnalazioni numerate (o «Nessuna segnalazione»), togli
 l'etichetta e fermati. Non fare commit sulla pull request di un altro.
+
+## Analisi di una CI rossa
+
+Se ti chiedono di analizzare una pull request la cui CI non passa: prendila in
+carico, leggi gli errori della CI e il codice, lascia **un solo commento** che
+comincia con «Analisi di <nome dell'agente>» con la causa probabile e la
+correzione che suggerisci, togli l'etichetta e fermati. Non fare commit.
 
 ## Correzioni
 
