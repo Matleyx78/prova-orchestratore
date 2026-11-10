@@ -2,5 +2,5 @@
 
 
 def subtract(a: float, b: float) -> float:
-    """Return the difference between a and b."""
+    """Return a minus b."""
     return a - b
