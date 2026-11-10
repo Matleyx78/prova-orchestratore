@@ -1,0 +1,21 @@
+name: CI
+
+# Runs on every push (any branch) as well as on pull requests: a push made with
+# a GitHub App token triggers it even when the pull request was opened with the
+# default GITHUB_TOKEN, which does not trigger workflows.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -t . -v

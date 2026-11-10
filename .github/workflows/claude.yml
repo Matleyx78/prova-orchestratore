@@ -1,0 +1,46 @@
+name: Claude
+
+# Starts Claude Code when a comment, review or issue mentions @claude.
+# Authentication uses the owner's Claude Max subscription through the
+# CLAUDE_CODE_OAUTH_TOKEN secret (created with `claude setup-token`).
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened, assigned]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+      id-token: write
+    env:
+      # Used by `gh` inside Claude's shell (labels, comments, CI wait).
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Test 3 needs comments written by automations to be accepted too.
+          allowed_bots: '*'
+          claude_args: >-
+            --model opus
+            --allowedTools "Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*)"

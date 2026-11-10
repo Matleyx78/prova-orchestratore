@@ -1,0 +1,57 @@
+name: Relay
+
+# Test 3: writes a comment that mentions an agent, using one of three
+# identities, to see which ones actually start the agent.
+#   github_token -> the default GITHUB_TOKEN (expected: nothing starts)
+#   pat          -> the RELAY_PAT secret (a fine-grained personal token)
+#   app          -> a GitHub App (RELAY_APP_ID variable, RELAY_APP_PRIVATE_KEY secret)
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Numero della issue o pull request
+        required: true
+      agente:
+        description: Agente da menzionare
+        type: choice
+        options: [claude, codex]
+      token:
+        description: Identità con cui scrivere il commento
+        type: choice
+        options: [github_token, pat, app]
+      messaggio:
+        description: Testo dopo la menzione
+        required: true
+        default: Leggi AGENTS.md e seguilo alla lettera. Realizza questa issue.
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create GitHub App token
+        id: app
+        if: inputs.token == 'app'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELAY_APP_ID }}
+          private-key: ${{ secrets.RELAY_APP_PRIVATE_KEY }}
+
+      - name: Post the comment
+        env:
+          GH_TOKEN: ${{ inputs.token == 'pat' && secrets.RELAY_PAT || inputs.token == 'app' && steps.app.outputs.token || github.token }}
+          BODY: "@${{ inputs.agente }} ${{ inputs.messaggio }}"
+          ISSUE: ${{ inputs.issue }}
+          KIND: ${{ inputs.token }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::The token for '$KIND' is not configured."
+            exit 1
+          fi
+          case "$ISSUE" in ''|*[!0-9]*) echo "::error::Not a number: $ISSUE"; exit 1;; esac
+          gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE/comments" \
+            -f body="$BODY" --jq '.html_url + "  by " + .user.login'
