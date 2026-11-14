@@ -17,7 +17,8 @@ def main() -> int:
     ).stdout
     changes = [line.split("\t") for line in out.splitlines() if line]
     paths = [c[-1] for c in changes]
-    cases = [p for p in paths if p.startswith("tests/verifica/casi/")]
+    cases = [p for p in paths
+             if p.startswith("tests/verifica/casi/") and not p.endswith(".gitkeep")]
     others = [p for p in paths if not p.startswith("tests/verifica/")]
     if cases and others:
         print("Riferimenti mescolati con altri file:", *others, sep="\n  ")
