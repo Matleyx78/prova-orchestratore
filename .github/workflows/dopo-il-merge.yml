@@ -1,0 +1,35 @@
+name: Dopo il merge
+
+# When the owner merges a pull request whose description has lines
+# "Avvia dopo il merge: #N", start or resume issue N with its agent.
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  avvia:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the issues named in the description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # The mention must come from the owner: agents ignore bots.
+          GH_TOKEN_UTENTE: ${{ secrets.RELAY_PAT }}
+          BODY: ${{ github.event.pull_request.body }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          numbers="$(printf '%s\n' "$BODY" | grep -oiE 'avvia dopo il merge:[[:space:]]*#[0-9]+' | grep -oE '[0-9]+' | sort -u || true)"
+          if [ -z "$numbers" ]; then
+            echo "Nothing to start."
+            exit 0
+          fi
+          for n in $numbers; do
+            bash scripts/avvia.sh "$n" "La pull request #$PR è stata unita."
+          done

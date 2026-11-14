@@ -19,3 +19,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -t . -v
+
+  separazione:
+    name: Separazione dei riferimenti
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check that reference cases are not mixed with other files
+        run: python3 scripts/separazione.py "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
