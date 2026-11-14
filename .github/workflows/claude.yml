@@ -33,7 +33,7 @@ jobs:
     env:
       # Used by `gh` inside Claude's shell (labels, comments, CI wait).
       GH_TOKEN: ${{ github.token }}
-      # Used only by scripts/passa-a-codex.sh: Codex answers only to the owner.
+      # Used only by scripts/passa.sh: the agents answer only to the owner.
       GH_TOKEN_UTENTE: ${{ secrets.RELAY_PAT }}
     steps:
       - uses: actions/checkout@v4
@@ -78,4 +78,4 @@ jobs:
             --model ${{ steps.opts.outputs.model }}
             --effort ${{ steps.opts.outputs.effort }}
             --append-system-prompt "Sei stato avviato con il modello ${{ steps.opts.outputs.model }} e l'impegno ${{ steps.opts.outputs.effort }}: scrivili cosi nelle pull request e nelle revisioni."
-            --allowedTools "Edit,Write,Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*),Bash(scripts/passa-a-codex.sh:*),Bash(bash scripts/passa-a-codex.sh:*)"
+            --allowedTools "Edit,Write,Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*),Bash(scripts/passa.sh:*),Bash(bash scripts/passa.sh:*)"

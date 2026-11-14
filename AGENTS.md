@@ -38,108 +38,115 @@ gh api -X DELETE "repos/Matleyx78/prova-orchestratore/issues/<numero>/labels/AA-
    nuovo; dopo tre tentativi fermati e scrivi nella pull request che cosa hai
    visto.
 3. Con tutto verde togli l'etichetta, scrivi un riepilogo nella pull request e
-   **termina**.
+   **termina**, dopo il passaggio in revisione qui sotto.
 
-## Passaggio a Claude (solo per Codex)
+## Ruoli
 
-Se sei Codex, quando hai finito una pull request di lavoro, come **ultima cosa
-prima di terminare** scrivi nella pull request **un solo** commento, a
-seconda di com'è andata:
+Su ogni issue lavorano due agenti:
 
-- CI verde:
+- l'**esecutore** è quello dell'etichetta `agente:…` della issue: realizza la
+  issue e poi corregge;
+- il **revisore** è **l'altro** (`claude` se l'esecutore è `codex`, e
+  viceversa): rivede, e non fa mai commit sulla pull request.
 
-  ```text
-  @claude [modello: opus] [impegno: alto] Leggi AGENTS.md e seguilo alla lettera. Rivedi questa pull request come dice AGENTS.md in "Revisione".
-  ```
+I passaggi dall'uno all'altro si fanno **solo** con `scripts/passa.sh`, mai
+scrivendo a mano `@claude` o `@codex`: ogni menzione avvia una sessione, e lo
+script scrive il testo giusto con l'identità del responsabile, l'unica a cui
+gli agenti rispondono.
 
-- CI ancora rossa dopo tre tentativi:
-
-  ```text
-  @claude [modello: opus] [impegno: alto] Leggi AGENTS.md e seguilo alla lettera. La CI di questa pull request non passa dopo tre tentativi: analizzala come dice AGENTS.md in "Analisi di una CI rossa".
-  ```
-
-Non scrivere `@claude` in nessun altro commento: ogni menzione avvia una
-sessione di Claude.
-
-Nella pull request e nei commenti scrivi il modello e l'impegno che il
-responsabile ti ha indicato nel messaggio di avvio (per esempio «GPT-6.1 Sol,
-impegno medio»); se non te li ha indicati, «modello e impegno non noti».
-
-## Revisione
-
-Se ti chiedono di rivedere una pull request che non è tua: prendila in carico,
-lascia **un solo commento** che comincia con «Revisione di <nome
-dell'agente>», con le segnalazioni numerate (o «Nessuna segnalazione»), togli
-l'etichetta e fermati. Non fare commit sulla pull request di un altro.
-
-Dal secondo giro rivedi **solo i commit di correzione** e le segnalazioni del
-giro prima. Non scrivere mai `@codex` né `@claude` nel testo della revisione.
-
-### Giri di revisione (solo per Claude, sulle pull request di Codex)
-
-1. **Numero del giro.** Conta i commenti della pull request che contengono
-   «Giro di revisione:». Il tuo giro è quel numero più uno; scrivi nella
-   revisione la riga «Giro di revisione: N».
-2. **Classifica ogni segnalazione** con una di queste etichette all'inizio:
-   - **[bloccante]**: la issue non è soddisfatta, un test manca o è sbagliato,
-     una regola di AGENTS.md è violata. Si corregge senza chiedere niente al
-     responsabile, perché la risposta è già nella issue o in AGENTS.md;
-   - **[decisione]**: serve una scelta che né la issue né AGENTS.md fanno (per
-     esempio cambiare il comportamento richiesto);
-   - **[facoltativa]**: un miglioramento non richiesto.
-3. **Alla fine della revisione**, in quest'ordine:
-   - se c'è almeno una **[decisione]**: aggiungi l'etichetta `decisione` alla
-     pull request **e alla issue che chiude** (quella di `Closes #N`), scrivi
-     nella issue «Serve una decisione del responsabile: vedi la pull request
-     #<numero>» e non passare niente a Codex;
-   - altrimenti, se ci sono **[bloccante]** e il giro è 1 o 2: lancia
-     `scripts/passa-a-codex.sh <numero della pull request> <N>`;
-   - altrimenti, se ci sono **[bloccante]** al giro 3: aggiungi l'etichetta
-     `decisione` alla pull request e alla issue, come sopra, e scrivi nella
-     revisione «Fermato dopo tre giri»;
-   - altrimenti (solo **[facoltativa]** o nessuna segnalazione): aggiungi
-     l'etichetta `pronta`.
-
-### Ripresa dopo una decisione (solo per Claude)
-
-Il responsabile riprende una pull request ferma con un commento che comincia
-con `@claude Decisione del responsabile:`. Allora:
-
-1. Prendi in carico e togli l'etichetta `decisione` dalla pull request e dalla
-   issue che chiude.
-2. Scrivi **un solo** commento che comincia con «Ripresa dopo la decisione
-   (giro N)», dove N è il giro della revisione che si era fermata. Non
-   scriverci «Giro di revisione:»: la ripresa non è un giro nuovo. Elenca:
-   - ogni modifica che la decisione chiede, come **[bloccante]**;
-   - le **[bloccante]** di quel giro ancora aperte.
-3. Poi:
-   - se l'elenco ha almeno una [bloccante]: lancia
-     `scripts/passa-a-codex.sh <numero della pull request> <N>`;
-   - altrimenti: aggiungi l'etichetta `pronta`.
-4. Togli `AA-Presa in carico` e fermati. Non fare commit.
-
-Se la decisione lascia aperta un'altra scelta, rimetti `decisione` come al
-punto 3 dei giri.
-
-## Analisi di una CI rossa
-
-Se ti chiedono di analizzare una pull request la cui CI non passa: prendila in
-carico, leggi gli errori della CI e il codice, lascia **un solo commento** che
-comincia con «Analisi di <nome dell'agente>» con la causa probabile e la
-correzione che suggerisci, togli l'etichetta e fermati. Non fare commit.
-
-## Correzioni
-
-Se ti chiedono di correggere la tua pull request dopo una revisione: prendila
-in carico, correggi solo le segnalazioni **[bloccante]** del giro indicato e,
-se c'è, del commento «Ripresa dopo la decisione» di quel giro (le
-[facoltativa] e le [decisione] non si toccano), aspetta la CI come sopra,
-rispondi con un commento che dice cosa hai corretto, togli l'etichetta e
-fermati. Lavori sul ramo della pull request: `gh pr checkout <numero>`.
-
-Se sei Codex, come ultima cosa scrivi **un solo** commento per il giro dopo,
-mettendo al posto di «N+1» il giro che ti hanno indicato più uno:
-
-```text
-@claude [modello: opus] [impegno: alto] Leggi AGENTS.md e seguilo alla lettera. Rivedi i commit di correzione di questa pull request come dice AGENTS.md in "Revisione" (giro N+1).
+```sh
+scripts/passa.sh <claude|codex> <numero della pull request> revisione <N>
+scripts/passa.sh <claude|codex> <numero della pull request> correzioni <N>
+scripts/passa.sh <claude|codex> <numero della pull request> analisi
 ```
+
+Nella pull request e nei commenti scrivi il modello e l'impegno con cui sei
+stato avviato; se non li sai, «modello e impegno non noti».
+
+## Passaggio in revisione (esecutore)
+
+Quando hai finito una pull request di lavoro, come **ultima cosa prima di
+terminare**:
+
+- CI verde: `scripts/passa.sh <revisore> <numero> revisione 1`;
+- CI ancora rossa dopo tre tentativi:
+  `scripts/passa.sh <revisore> <numero> analisi`.
+
+## Fermarsi per una decisione
+
+Chiunque tu sia, esecutore o revisore, ti fermi per una decisione quando:
+
+- un caso della issue è sbagliato (per esempio un valore atteso che contraddice
+  la descrizione): **non correggerlo e non adattare il codice al caso
+  sbagliato**;
+- manca un'informazione che né la issue né AGENTS.md danno;
+- in revisione, c'è una segnalazione **[decisione]** o si arriva al giro 3 con
+  delle [bloccante] ancora aperte.
+
+Allora:
+
+1. aggiungi l'etichetta `decisione` alla issue e, se c'è, alla pull request;
+2. scrivi **un solo** commento (nella pull request se c'è, altrimenti nella
+   issue) che comincia con «Serve una decisione del responsabile», con il
+   problema, le scelte possibili e, come ultima riga, quella pronta da copiare
+   con il **tuo** nome: `` Per riprendere: `@<tuo nome> Decisione del responsabile: …` ``;
+3. se il commento è nella pull request, scrivi nella issue «Serve una decisione
+   del responsabile: vedi la pull request #<numero>»;
+4. togli `AA-Presa in carico` e termina, senza aspettare la CI.
+
+## Ripresa dopo una decisione
+
+Il responsabile riprende con un commento che comincia con
+`@<tuo nome> Decisione del responsabile:`. Prendi in carico, togli `decisione`
+dalla issue e dalla pull request, e poi:
+
+- **se eri l'esecutore**: continua il lavoro applicando la decisione, fino al
+  passaggio in revisione (o a una nuova decisione);
+- **se eri il revisore**: scrivi **un solo** commento che comincia con «Ripresa
+  dopo la decisione (giro N)», dove N è il giro che si era fermato (senza
+  scrivere «Giro di revisione:»: non è un giro nuovo), con ogni modifica che la
+  decisione chiede come **[bloccante]** e le [bloccante] di quel giro ancora
+  aperte. Se ce n'è almeno una: `scripts/passa.sh <esecutore> <numero>
+  correzioni <N>`; altrimenti aggiungi l'etichetta `pronta`. Togli
+  `AA-Presa in carico` e fermati.
+
+## Revisione (revisore)
+
+Prendi in carico la pull request e lascia **un solo commento** che comincia con
+«Revisione di <nome dell'agente>», con la riga «Giro di revisione: N». N è il
+numero dei commenti della pull request che contengono «Giro di revisione:», più
+uno. Dal giro 2 rivedi **solo i commit di correzione** e le segnalazioni del
+giro prima.
+
+Ogni segnalazione comincia con la sua classe:
+
+- **[bloccante]**: la issue non è soddisfatta, un test manca o è sbagliato, una
+  regola di AGENTS.md è violata. La risposta è già nella issue o in AGENTS.md;
+- **[decisione]**: serve una scelta che né la issue né AGENTS.md fanno;
+- **[facoltativa]**: un miglioramento non richiesto.
+
+Alla fine, in quest'ordine:
+
+- almeno una [decisione], o [bloccante] al giro 3 (scrivi «Fermato dopo tre
+  giri»): «Fermarsi per una decisione»;
+- [bloccante] ai giri 1 o 2: `scripts/passa.sh <esecutore> <numero>
+  correzioni <N>`;
+- altrimenti (solo [facoltativa] o nessuna segnalazione): etichetta `pronta`.
+
+Poi togli `AA-Presa in carico` e fermati. Non fare commit.
+
+## Analisi di una CI rossa (revisore)
+
+Prendi in carico, leggi gli errori della CI e il codice, lascia **un solo
+commento** che comincia con «Analisi di <nome dell'agente>» con la causa
+probabile e la correzione che suggerisci, togli l'etichetta e fermati. Non
+fare commit.
+
+## Correzioni (esecutore)
+
+Prendi in carico, lavora sul ramo della pull request
+(`gh pr checkout <numero>`), correggi solo le **[bloccante]** del giro indicato
+e, se c'è, del commento «Ripresa dopo la decisione» di quel giro (le
+[facoltativa] e le [decisione] non si toccano). Aspetta la CI come sopra,
+rispondi con un commento che dice cosa hai corretto, togli l'etichetta e, come
+ultima cosa, `scripts/passa.sh <revisore> <numero> revisione <N+1>`.
