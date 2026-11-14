@@ -3,7 +3,8 @@
 An open issue or pull request is a stuck chain when:
 - the chain has started (a "Presa in carico" comment or a mention of an agent);
 - it has none of the labels that mean "waiting for the owner" or "finished"
-  (pronta, decisione, ferma, proposta);
+  (pronta, decisione, ferma, proposta), unless it has `decisione` and the
+  last comment is the owner's decision that no agent picked up;
 - an issue is not handled by an open pull request that closes it;
 - nothing has moved for at least SOGLIA_MINUTI minutes (and at most 24 hours:
   older items predate the sentinel and are left alone).
@@ -26,6 +27,7 @@ SOGLIA = int(os.environ.get("SOGLIA_MINUTI", "30") or "30")
 DRY_RUN = os.environ.get("DRY_RUN") == "1"
 STOP_LABELS = {"pronta", "decisione", "ferma", "proposta"}
 STARTED = re.compile(r"Presa in carico|@claude|@codex", re.IGNORECASE)
+DECIDED = re.compile(r"^\s*@\w+ Decisione del responsabile:", re.IGNORECASE)
 CLOSES = re.compile(r"(?:closes|fixes|resolves)\s+#(\d+)", re.IGNORECASE)
 
 
@@ -55,9 +57,12 @@ def main() -> int:
         number = it["number"]
         labels = {lab["name"] for lab in it["labels"]}
         is_pr = "pull_request" in it
-        if labels & STOP_LABELS:
+        decision_pending = "decisione" in labels and not labels & (STOP_LABELS - {"decisione"})
+        if labels & STOP_LABELS and not decision_pending:
             continue
-        if not is_pr and (number in handled_by_pr or not any(l.startswith("agente:") for l in labels)):
+        if not is_pr and not any(l.startswith("agente:") for l in labels):
+            continue
+        if not is_pr and number in handled_by_pr and not decision_pending:
             continue
         updated = dt.datetime.fromisoformat(it["updated_at"].replace("Z", "+00:00"))
         idle = (now - updated).total_seconds() / 60
@@ -67,9 +72,17 @@ def main() -> int:
         if not any(STARTED.search(c.get("body") or "") for c in comments):
             continue
         last = comments[-1] if comments else None
+        human = [c for c in comments if not c["user"]["login"].endswith("[bot]")]
+        if decision_pending:
+            # Waiting for the owner is fine; an answered decision that nobody
+            # picked up is not.
+            # Bot replies (for example "usage limits") do not count.
+            if not human or not DECIDED.search(human[-1].get("body") or ""):
+                continue
         held = "AA-Presa in carico" in labels
         text = (
-            f"**Catena ferma** (sentinella): nessun movimento da {int(idle)} minuti"
+            ("**Decisione non ripresa** (sentinella): " if decision_pending else "**Catena ferma** (sentinella): ")
+            + f"nessun movimento da {int(idle)} minuti"
             + (f"; ultimo commento di {last['user']['login']} alle {last['created_at'][11:16]} UTC" if last else "")
             + "."
             + ("\n\nL'etichetta `AA-Presa in carico` è rimasta: l'agente si è probabilmente interrotto"
