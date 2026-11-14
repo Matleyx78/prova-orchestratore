@@ -15,11 +15,13 @@ on:
 
 jobs:
   claude:
+    # Only the owner can start Claude (Codex writes with the owner's token).
     if: |
+      github.actor == 'Matleyx78' && (
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude'))))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -31,6 +33,8 @@ jobs:
     env:
       # Used by `gh` inside Claude's shell (labels, comments, CI wait).
       GH_TOKEN: ${{ github.token }}
+      # Used only by scripts/passa-a-codex.sh: Codex answers only to the owner.
+      GH_TOKEN_UTENTE: ${{ secrets.RELAY_PAT }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -74,4 +78,4 @@ jobs:
             --model ${{ steps.opts.outputs.model }}
             --effort ${{ steps.opts.outputs.effort }}
             --append-system-prompt "Sei stato avviato con il modello ${{ steps.opts.outputs.model }} e l'impegno ${{ steps.opts.outputs.effort }}: scrivili cosi nelle pull request e nelle revisioni."
-            --allowedTools "Edit,Write,Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*)"
+            --allowedTools "Edit,Write,Bash(gh:*),Bash(git:*),Bash(python3:*),Bash(scripts/ci-attendi.sh:*),Bash(bash scripts/ci-attendi.sh:*),Bash(scripts/passa-a-codex.sh:*),Bash(bash scripts/passa-a-codex.sh:*)"
