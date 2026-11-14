@@ -13,6 +13,11 @@ class PowerTest(unittest.TestCase):
     def test_negative_exponent(self) -> None:
         self.assertAlmostEqual(power(2, -2), 0.25)
 
+    def test_negative_exponent_no_intermediate_overflow(self) -> None:
+        # 2.0 ** 1024 overflows to inf, but 2.0 ** -1024 is representable.
+        self.assertEqual(power(2.0, -1024), 2.0 ** -1024)
+        self.assertNotEqual(power(2.0, -1024), 0.0)
+
     def test_negative_base(self) -> None:
         self.assertEqual(power(-3, 3), -27)
 
