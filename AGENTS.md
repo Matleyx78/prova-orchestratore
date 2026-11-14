@@ -165,16 +165,20 @@ Allora:
    issue) che comincia con «Serve una decisione del responsabile», con il
    problema, le scelte possibili e, come ultima riga, quella da copiare con il
    **tuo** nome, **senza la chiocciola** (una menzione vera avvierebbe subito
-   un agente): «Per riprendere scrivi, con @ davanti: `<tuo nome> Decisione
-   del responsabile: …`»;
+   un agente), e **dove** scriverla: «Per riprendere scrivi **nella issue
+   #<numero>**, con @ davanti: `<tuo nome> Decisione del responsabile: …`».
+   Il posto è sempre la **issue**, anche se ti sei fermato in una pull request:
+   su una pull request la menzione di Codex avvia la sua revisione automatica
+   invece di un lavoro;
 3. se il commento è nella pull request, scrivi nella issue «Serve una decisione
    del responsabile: vedi la pull request #<numero>»;
 4. togli `AA-Presa in carico` e termina, senza aspettare la CI.
 
 ## Ripresa dopo una decisione
 
-Il responsabile riprende con un commento che comincia con
-`@<tuo nome> Decisione del responsabile:`. Prendi in carico, togli `decisione`
+Il responsabile riprende con un commento nella issue che comincia con
+`@<tuo nome> Decisione del responsabile:`. Se ti eri fermato in una pull
+request, lavori lì: la issue è solo il posto da cui riparti. Prendi in carico, togli `decisione`
 dalla issue e dalla pull request, e poi:
 
 - **se eri l'esecutore**: continua il lavoro applicando la decisione, fino al
