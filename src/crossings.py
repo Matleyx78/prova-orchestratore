@@ -30,9 +30,8 @@ def count_crossings(polyline: list[Point], a: Point, b: Point) -> int:
             continue
 
         near_b = segment_intersection(b, a, start, end)
-        if near_b is not None and not (
-            math.isclose(near_a[0], near_b[0], abs_tol=tolerance)
-            and math.isclose(near_a[1], near_b[1], abs_tol=tolerance)
+        if near_b is not None and not math.isclose(
+            position(near_a), position(near_b), abs_tol=tolerance
         ):
             first, last = sorted((position(near_a), position(near_b)))
             overlaps.append((first, last))
