@@ -72,6 +72,31 @@ lascia **un solo commento** che comincia con «Revisione di <nome
 dell'agente>», con le segnalazioni numerate (o «Nessuna segnalazione»), togli
 l'etichetta e fermati. Non fare commit sulla pull request di un altro.
 
+Dal secondo giro rivedi **solo i commit di correzione** e le segnalazioni del
+giro prima. Non scrivere mai `@codex` né `@claude` nel testo della revisione.
+
+### Giri di revisione (solo per Claude, sulle pull request di Codex)
+
+1. **Numero del giro.** Conta i commenti della pull request che contengono
+   «Giro di revisione:». Il tuo giro è quel numero più uno; scrivi nella
+   revisione la riga «Giro di revisione: N».
+2. **Classifica ogni segnalazione** con una di queste etichette all'inizio:
+   - **[bloccante]**: la issue non è soddisfatta, un test manca o è sbagliato,
+     una regola di AGENTS.md è violata. Si corregge senza chiedere niente al
+     responsabile, perché la risposta è già nella issue o in AGENTS.md;
+   - **[decisione]**: serve una scelta che né la issue né AGENTS.md fanno (per
+     esempio cambiare il comportamento richiesto);
+   - **[facoltativa]**: un miglioramento non richiesto.
+3. **Alla fine della revisione**, in quest'ordine:
+   - se c'è almeno una **[decisione]**: aggiungi l'etichetta `decisione` alla
+     pull request e non passare niente a Codex;
+   - altrimenti, se ci sono **[bloccante]** e il giro è 1 o 2: lancia
+     `scripts/passa-a-codex.sh <numero della pull request> <N>`;
+   - altrimenti, se ci sono **[bloccante]** al giro 3: aggiungi l'etichetta
+     `decisione` e scrivi nella revisione «Fermato dopo tre giri»;
+   - altrimenti (solo **[facoltativa]** o nessuna segnalazione): aggiungi
+     l'etichetta `pronta`.
+
 ## Analisi di una CI rossa
 
 Se ti chiedono di analizzare una pull request la cui CI non passa: prendila in
@@ -82,6 +107,14 @@ correzione che suggerisci, togli l'etichetta e fermati. Non fare commit.
 ## Correzioni
 
 Se ti chiedono di correggere la tua pull request dopo una revisione: prendila
-in carico, correggi solo ciò che le segnalazioni chiedono, aspetta la CI come
-sopra, rispondi con un commento che dice cosa hai corretto, togli l'etichetta e
-fermati.
+in carico, correggi solo le segnalazioni **[bloccante]** del giro indicato (le
+[facoltativa] e le [decisione] non si toccano), aspetta la CI come sopra,
+rispondi con un commento che dice cosa hai corretto, togli l'etichetta e
+fermati. Lavori sul ramo della pull request: `gh pr checkout <numero>`.
+
+Se sei Codex, come ultima cosa scrivi **un solo** commento per il giro dopo,
+mettendo al posto di «N+1» il giro che ti hanno indicato più uno:
+
+```text
+@claude [modello: opus] [impegno: alto] Leggi AGENTS.md e seguilo alla lettera. Rivedi i commit di correzione di questa pull request come dice AGENTS.md in "Revisione" (giro N+1).
+```
