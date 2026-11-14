@@ -22,13 +22,88 @@ gh api -X DELETE "repos/Matleyx78/prova-orchestratore/issues/<numero>/labels/AA-
 
 ## Lavoro
 
-- Fai solo ciò che chiede la issue, e niente fuori da `src/` e `tests/`.
+- Fai solo ciò che chiede la issue, nei file che il suo tipo permette ("Tipi di
+  issue").
 - Ogni funzione nuova ha almeno un test in `tests/`.
 - Prova in locale con `python3 -m unittest discover -s tests -t .`.
 - Codice, commenti e messaggi di commit in inglese; pull request in italiano.
 - Conventional Commits, con la riga `Assisted-by: <nome dello strumento>`.
 - La pull request ha `Closes #N` nella descrizione e indica strumento, modello
   e impegno (se non lo sai, «impegno non noto»).
+
+## Tipi di issue
+
+Il tipo si riconosce dal titolo e dall'etichetta. La scheda, se c'è, sta in
+`docs/schede/` e fa fede.
+
+| Titolo | Etichetta | Che cosa fa l'esecutore | File che può toccare |
+|---|---|---|---|
+| `[PN]` | `pacchetto` | codice e test | `src/`, `tests/` tranne `tests/verifica/casi/`; può togliere righe dai file di `tests/verifica/in-attesa/` |
+| `[RN]` | `riferimenti` | casi di riferimento per un pacchetto | solo `tests/verifica/` |
+| `[CN]` | `contratto` | corregge il contratto di `kernel/` secondo la decisione | solo `kernel/` |
+| `[IN]` | `revisione-interfacce` | verbale sulle schede, **senza pull request** | nessuno (dopo una decisione: solo `docs/schede/`) |
+
+### Pacchetto (`[PN]`)
+
+- Usa `kernel/` solo per ciò che dicono le sue docstring (il **contratto**), e
+  non modificarlo mai. Se ti serve qualcosa che il contratto non dice, è un
+  **buco del contratto**: vedi «Buco nel contratto».
+- Se la scheda ha casi di riferimento in `tests/verifica/in-attesa/`, togli le
+  loro righe: i casi devono passare. Non toccare mai i casi.
+
+### Riferimenti (`[RN]`)
+
+- Scrivi i casi in `tests/verifica/casi/`, un file JSON per caso (formato in
+  `tests/test_verifica.py`), ricavando i valori **da calcoli o da fonti
+  pubbliche, mai eseguendo il programma**.
+- Se la funzione non esiste ancora, elenca i casi in
+  `tests/verifica/in-attesa/<RN>.txt`, una riga per caso:
+  `<file del caso> #<issue del pacchetto>`.
+- Se la funzione esiste già e un tuo caso fallisce, rifai il valore dalle
+  fonti. Se le fonti confermano il tuo valore, **può essere un errore del
+  programma: non adattare il caso**. Fermati («Fermarsi per una decisione»)
+  con il caso, il valore atteso e quello che dà il programma.
+- Nella descrizione della pull request scrivi la riga
+  `Avvia dopo il merge: #<issue del pacchetto>`: al merge il pacchetto parte
+  da solo.
+
+### Buco nel contratto
+
+Se il contratto di `kernel/` non dice ciò che ti serve, non indovinarlo e non
+scrivere tu la funzione:
+
+1. apri una issue `[CN] <funzione>: <che cosa manca>` con le etichette
+   `contratto` e `decisione` e l'etichetta `agente:` **dell'altro agente**, con
+   il problema, le scelte possibili e la riga per riprendere (con il nome
+   dell'altro agente, senza chiocciola);
+2. sulla tua issue: «Fermarsi per una decisione», con un rimando alla issue del
+   contratto; se hai lavoro non pubblicato, pubblica il ramo **senza** pull
+   request e scrivi il nome del ramo.
+
+### Contratto (`[CN]`)
+
+Dopo la decisione: una pull request che tocca solo `kernel/`, con in testa alla
+descrizione **Revisione del contratto: da fare**, la decisione applicata,
+`Closes #<CN>` e `Avvia dopo il merge: #<pacchetto sospeso>`. Poi il passaggio
+in revisione. Il revisore scrive come commento il **verbale della revisione del
+contratto** con le classi di sempre; un buco nuovo è una [decisione]: non
+sceglie lui.
+
+### Revisione delle interfacce (`[IN]`)
+
+Leggi le schede indicate e il contratto che usano. Scrivi nella issue **un
+solo** commento «Verbale della revisione delle interfacce», con per ogni scheda
+le segnalazioni classificate. Nessuna pull request, nessun commit.
+
+- Almeno una [decisione]: «Fermarsi per una decisione» sulla issue.
+- Altrimenti: etichetta `pronta` sulla issue.
+
+Alla ripresa dopo la decisione l'esecutore applica le decisioni alle schede in
+**una** pull request che tocca solo `docs/schede/`, con in testa
+**Revisione della correzione: da fare** e `Closes #<IN>`, e la passa in
+revisione. Il revisore controlla solo le regole nuove o corrette (valgono anche
+al contrario? e al limite esatto?) e non sceglie: un buco nuovo è una
+[decisione].
 
 ## Quando fermarsi
 

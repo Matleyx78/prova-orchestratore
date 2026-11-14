@@ -1,0 +1,35 @@
+name: Sentinella
+
+# Every 30 minutes, label as `ferma` the chains that stopped without saying so
+# (no pronta/decisione, nothing moving). Can also be started by hand with a
+# custom threshold.
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+    inputs:
+      soglia_minuti:
+        description: Minuti senza movimento per considerare ferma una catena
+        default: "30"
+      dry_run:
+        description: Solo elenco, senza etichette né commenti
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  sentinella:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Look for stuck chains
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOGLIA_MINUTI: ${{ inputs.soglia_minuti || '30' }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: python3 scripts/sentinella.py
