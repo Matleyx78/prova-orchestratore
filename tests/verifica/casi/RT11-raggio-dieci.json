@@ -1,0 +1,1 @@
+{"funzione": "src.circle.circle_area", "argomenti": [10], "atteso": 314.1592653589793, "tolleranza": 1e-12}
