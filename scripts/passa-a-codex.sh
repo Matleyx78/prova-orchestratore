@@ -14,6 +14,6 @@ if [ -z "${GH_TOKEN_UTENTE:-}" ]; then
   exit 1
 fi
 
-body="@codex Prima di tutto esegui git pull --ff-only origin main. Leggi AGENTS.md e seguilo alla lettera. Correggi le segnalazioni bloccanti del giro di revisione $2 di questa pull request come dice AGENTS.md in \"Correzioni\"."
+body="@codex Prima di tutto esegui git pull --ff-only origin main. Leggi AGENTS.md e seguilo alla lettera. Correggi le segnalazioni bloccanti del giro di revisione $2 di questa pull request (e della ripresa dopo la decisione, se c'è) come dice AGENTS.md in \"Correzioni\"."
 GH_TOKEN="$GH_TOKEN_UTENTE" gh api "repos/Matleyx78/prova-orchestratore/issues/$1/comments" \
   -f body="$body" --jq '.html_url'

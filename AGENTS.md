@@ -89,13 +89,37 @@ giro prima. Non scrivere mai `@codex` né `@claude` nel testo della revisione.
    - **[facoltativa]**: un miglioramento non richiesto.
 3. **Alla fine della revisione**, in quest'ordine:
    - se c'è almeno una **[decisione]**: aggiungi l'etichetta `decisione` alla
-     pull request e non passare niente a Codex;
+     pull request **e alla issue che chiude** (quella di `Closes #N`), scrivi
+     nella issue «Serve una decisione del responsabile: vedi la pull request
+     #<numero>» e non passare niente a Codex;
    - altrimenti, se ci sono **[bloccante]** e il giro è 1 o 2: lancia
      `scripts/passa-a-codex.sh <numero della pull request> <N>`;
    - altrimenti, se ci sono **[bloccante]** al giro 3: aggiungi l'etichetta
-     `decisione` e scrivi nella revisione «Fermato dopo tre giri»;
+     `decisione` alla pull request e alla issue, come sopra, e scrivi nella
+     revisione «Fermato dopo tre giri»;
    - altrimenti (solo **[facoltativa]** o nessuna segnalazione): aggiungi
      l'etichetta `pronta`.
+
+### Ripresa dopo una decisione (solo per Claude)
+
+Il responsabile riprende una pull request ferma con un commento che comincia
+con `@claude Decisione del responsabile:`. Allora:
+
+1. Prendi in carico e togli l'etichetta `decisione` dalla pull request e dalla
+   issue che chiude.
+2. Scrivi **un solo** commento che comincia con «Ripresa dopo la decisione
+   (giro N)», dove N è il giro della revisione che si era fermata. Non
+   scriverci «Giro di revisione:»: la ripresa non è un giro nuovo. Elenca:
+   - ogni modifica che la decisione chiede, come **[bloccante]**;
+   - le **[bloccante]** di quel giro ancora aperte.
+3. Poi:
+   - se l'elenco ha almeno una [bloccante]: lancia
+     `scripts/passa-a-codex.sh <numero della pull request> <N>`;
+   - altrimenti: aggiungi l'etichetta `pronta`.
+4. Togli `AA-Presa in carico` e fermati. Non fare commit.
+
+Se la decisione lascia aperta un'altra scelta, rimetti `decisione` come al
+punto 3 dei giri.
 
 ## Analisi di una CI rossa
 
@@ -107,7 +131,8 @@ correzione che suggerisci, togli l'etichetta e fermati. Non fare commit.
 ## Correzioni
 
 Se ti chiedono di correggere la tua pull request dopo una revisione: prendila
-in carico, correggi solo le segnalazioni **[bloccante]** del giro indicato (le
+in carico, correggi solo le segnalazioni **[bloccante]** del giro indicato e,
+se c'è, del commento «Ripresa dopo la decisione» di quel giro (le
 [facoltativa] e le [decisione] non si toccano), aspetta la CI come sopra,
 rispondi con un commento che dice cosa hai corretto, togli l'etichetta e
 fermati. Lavori sul ramo della pull request: `gh pr checkout <numero>`.
