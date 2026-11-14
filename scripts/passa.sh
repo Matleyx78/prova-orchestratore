@@ -37,6 +37,21 @@ case "$kind" in
     task="La CI di questa pull request non passa dopo tre tentativi: analizzala come dice AGENTS.md in \"Analisi di una CI rossa (revisore)\"." ;;
 esac
 
+# On a pull request, any review-like request to Codex starts its built-in
+# code review instead of an agent task. Review and analysis requests for Codex
+# therefore go to the issue the pull request closes, naming the pull request.
+target="$pr"
+if [ "$agent" = codex ] && [ "$kind" != correzioni ]; then
+  target="$(gh api "repos/Matleyx78/prova-orchestratore/pulls/$pr" --jq '.body // ""' \
+    | grep -oiE '(closes|fixes|resolves) #[0-9]+' | head -n 1 | grep -oE '[0-9]+' || true)"
+  if [ -z "$target" ]; then
+    echo "pull request #$pr closes no issue: cannot hand it to Codex" >&2
+    exit 1
+  fi
+  task="Sei il revisore della pull request #$pr, che chiude questa issue: lavora sulla pull request #$pr. $task"
+  task="${task//questa pull request/la pull request #$pr}"
+fi
+
 token="${GH_TOKEN_UTENTE:-${GH_TOKEN:-}}"
 if [ -z "$token" ]; then
   echo "neither GH_TOKEN_UTENTE nor GH_TOKEN is set" >&2
@@ -44,5 +59,5 @@ if [ -z "$token" ]; then
 fi
 
 body="$prefix Leggi AGENTS.md e seguilo alla lettera. $task"
-GH_TOKEN="$token" gh api "repos/Matleyx78/prova-orchestratore/issues/$pr/comments" \
+GH_TOKEN="$token" gh api "repos/Matleyx78/prova-orchestratore/issues/$target/comments" \
   -f body="$body" --jq '.html_url'

@@ -50,7 +50,7 @@ Su ogni issue lavorano due agenti:
   viceversa): rivede, e non fa mai commit sulla pull request.
 
 I passaggi dall'uno all'altro si fanno **solo** con `scripts/passa.sh`, mai
-scrivendo a mano `@claude` o `@codex`: ogni menzione avvia una sessione, e lo
+scrivendo a mano `@claude` o `@codex` (nemmeno in un esempio o fra apici): ogni menzione avvia una sessione, e lo
 script scrive il testo giusto con l'identità del responsabile, l'unica a cui
 gli agenti rispondono.
 
@@ -88,8 +88,10 @@ Allora:
 1. aggiungi l'etichetta `decisione` alla issue e, se c'è, alla pull request;
 2. scrivi **un solo** commento (nella pull request se c'è, altrimenti nella
    issue) che comincia con «Serve una decisione del responsabile», con il
-   problema, le scelte possibili e, come ultima riga, quella pronta da copiare
-   con il **tuo** nome: `` Per riprendere: `@<tuo nome> Decisione del responsabile: …` ``;
+   problema, le scelte possibili e, come ultima riga, quella da copiare con il
+   **tuo** nome, **senza la chiocciola** (una menzione vera avvierebbe subito
+   un agente): «Per riprendere scrivi, con @ davanti: `<tuo nome> Decisione
+   del responsabile: …`»;
 3. se il commento è nella pull request, scrivi nella issue «Serve una decisione
    del responsabile: vedi la pull request #<numero>»;
 4. togli `AA-Presa in carico` e termina, senza aspettare la CI.
@@ -111,6 +113,10 @@ dalla issue e dalla pull request, e poi:
   `AA-Presa in carico` e fermati.
 
 ## Revisione (revisore)
+
+La richiesta può arrivare nella issue che la pull request chiude: lavori
+comunque sulla **pull request** indicata, e lì vanno presa in carico, commento
+ed etichette.
 
 Prendi in carico la pull request e lascia **un solo commento** che comincia con
 «Revisione di <nome dell'agente>», con la riga «Giro di revisione: N». N è il
