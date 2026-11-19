@@ -1,6 +1,1 @@
 # RT11: reference cases for circle_area (P11), waiting for the package.
-RT11-raggio-zero.json #31
-RT11-raggio-uno.json #31
-RT11-raggio-non-intero.json #31
-RT11-raggio-dieci.json #31
-RT11-raggio-negativo.json #31
